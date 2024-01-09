@@ -13,6 +13,7 @@ option(BUILD_DOC "Build Doxygen documentation" OFF)
 option(BUILD_BROTLI "Build Brotli" ON)
 option(BUILD_YAML_CONFIG "Build yaml config" ON)
 option(USE_SUBMODULE "Use trantor as a submodule" ON)
+option(USE_JSONCPP_SUBMODULE "Use jsoncpp as a submodule" ON)
 
 include(CMakeDependentOption)
 CMAKE_DEPENDENT_OPTION(BUILD_POSTGRESQL "Build with postgresql support" ON "BUILD_ORM" OFF)
@@ -181,9 +182,20 @@ endif()
 
 
 # jsoncpp
-find_package(Jsoncpp REQUIRED)
-target_link_libraries(${PROJECT_NAME} PUBLIC Jsoncpp_lib)
-list(APPEND INCLUDE_DIRS_FOR_DYNAMIC_VIEW ${JSONCPP_INCLUDE_DIRS})
+if (USE_JSONCPP_SUBMODULE)
+    target_include_directories(
+            ${PROJECT_NAME}
+            PUBLIC
+            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/jsoncpp/include>)
+    add_subdirectory(jsoncpp)
+    target_link_libraries(${PROJECT_NAME} PUBLIC jsoncpp_static)
+    
+else()
+    find_package(Jsoncpp REQUIRED)
+    target_link_libraries(${PROJECT_NAME} PUBLIC Jsoncpp_lib)
+    list(APPEND INCLUDE_DIRS_FOR_DYNAMIC_VIEW ${JSONCPP_INCLUDE_DIRS})
+
+endif()
 
 # yamlcpp
 if(BUILD_YAML_CONFIG)
